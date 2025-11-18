@@ -64,6 +64,9 @@ sysinfo.txt
 *.unitypackage.meta
 *.app
 
+# Plastic
+.plastic/
+
 # Crashlytics generated file
 crashlytics-build.properties
 
