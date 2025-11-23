@@ -255,8 +255,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 432658192677599601}
+  - component: {fileID: 3322179833406903937}
   m_Layer: 0
-  m_Name: Room Placeholder
+  m_Name: RoomNode
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -278,6 +279,22 @@ Transform:
   - {fileID: 3355568930775853819}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3322179833406903937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6895044274022935866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d96feb20b91e6c649ab2c71e68419f45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  connectUp: 0
+  connectDown: 0
+  connectLeft: 0
+  connectRight: 0
 --- !u!1 &7418261557950526249
 GameObject:
   m_ObjectHideFlags: 0

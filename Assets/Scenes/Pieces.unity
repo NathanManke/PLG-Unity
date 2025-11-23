@@ -210,7 +210,7 @@ Transform:
   m_GameObject: {fileID: 60579363}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 12.12, y: -17.35, z: -21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -308,27 +308,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1526176208 stripped
+--- !u!1 &465113257
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 6895044274022935866, guid: 97c8e2075faa8d04e8ca054bcf3e5319, type: 3}
-  m_PrefabInstance: {fileID: 7180525103630482520}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1526176210
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 465113259}
+  - component: {fileID: 465113258}
+  m_Layer: 0
+  m_Name: RoomGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &465113258
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1526176208}
+  m_GameObject: {fileID: 465113257}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d96feb20b91e6c649ab2c71e68419f45, type: 3}
+  m_Script: {fileID: 11500000, guid: 0f6d1438460a1754d948cfdf23e77eae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectUp: 0
-  connectDown: 0
-  connectLeft: 0
-  connectRight: 0
+--- !u!4 &465113259
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465113257}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.0036917329, y: -1.7039604, z: 0.006621815}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &7180525103630482520
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -379,15 +402,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6895044274022935866, guid: 97c8e2075faa8d04e8ca054bcf3e5319, type: 3}
       propertyPath: m_Name
-      value: Room Placeholder
+      value: RoomNode
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6895044274022935866, guid: 97c8e2075faa8d04e8ca054bcf3e5319, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1526176210}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 97c8e2075faa8d04e8ca054bcf3e5319, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -396,3 +416,4 @@ SceneRoots:
   - {fileID: 96696447}
   - {fileID: 60579365}
   - {fileID: 7180525103630482520}
+  - {fileID: 465113259}
