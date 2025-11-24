@@ -339,7 +339,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomNodePrefab: {fileID: 6895044274022935866, guid: 97c8e2075faa8d04e8ca054bcf3e5319, type: 3}
   levelSize: 15
-  roomScale: 1
+  roomScale: 3
+  Single: {fileID: 0}
+  Double1: {fileID: 0}
+  Double2: {fileID: 0}
+  Triple: {fileID: 0}
+  Quad: {fileID: 0}
 --- !u!4 &465113259
 Transform:
   m_ObjectHideFlags: 0

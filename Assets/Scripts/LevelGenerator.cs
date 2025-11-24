@@ -12,25 +12,32 @@ public class LevelGenerator : MonoBehaviour
     private RoomNode[,] roomMatrix;
     
     [Header("Room Prefabs")]
-    // R_UDLR where 1 indicates connectivity in that direction
-    public GameObject   R_0001;
-    public GameObject   R_0010, R_0011, R_0100,
-                        R_0101, R_0110, R_0111, 
-                        R_1000, R_1001, R_1010, 
-                        R_1011, R_1100, R_1101, 
-                        R_1110, R_1111;
+    // Pefabs of rooms of different connectivity
+    public GameObject   Single;
+    public GameObject   DoubleI; // 2 connections in a straight line
+    public GameObject   DoubleL; // 2 connections at a right angle
+    public GameObject   Triple;
+    public GameObject   Quad;
 
     void Start()
     {
         // Initialize the room matrix
         roomMatrix = new RoomNode[levelSize, levelSize];
+        DoGeneration();
+    }
+
+    void DoGeneration()
+    {
         InitializeRooms();
+        GenerateRoomsMethod1();
+        PickAndPlace();
     }
 
     public void InitializeRooms()
     {
         for (int row = 0; row < levelSize; row++)
-        { for (int col = 0; col < levelSize; col++)
+        { 
+            for (int col = 0; col < levelSize; col++)
             {
                 Vector3 roomPos = transform.position;
                 roomPos += new Vector3(roomScale * row, 0, roomScale * col);
@@ -43,6 +50,11 @@ public class LevelGenerator : MonoBehaviour
     }
 
     public void GenerateRoomsMethod1()
+    {
+
+    }
+
+    public void PickAndPlace()
     {
 
     }

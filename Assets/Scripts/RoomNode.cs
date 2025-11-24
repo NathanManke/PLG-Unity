@@ -60,7 +60,7 @@ public class RoomNode : MonoBehaviour
     {
         gridPos = new int[] {row, col};
         transform.position = new Vector3(row * roomScale, 0, col * roomScale);
-        transform.localScale = Vector3.one * roomScale;
+        transform.Find("Container").localScale = Vector3.one * roomScale;
     }
 
     public int[] GetGridPosition()
