@@ -4,6 +4,48 @@ using UnityEngine;
 
 public class LevelGenerator : MonoBehaviour
 {
+
+    public GameObject roomNodePrefab;
+    public int levelSize = 10;
+    public float roomScale = 1;
+
+    private RoomNode[,] roomMatrix;
+    
+    [Header("Room Prefabs")]
+    // R_UDLR where 1 indicates connectivity in that direction
+    public GameObject   R_0001;
+    public GameObject   R_0010, R_0011, R_0100,
+                        R_0101, R_0110, R_0111, 
+                        R_1000, R_1001, R_1010, 
+                        R_1011, R_1100, R_1101, 
+                        R_1110, R_1111;
+
+    void Start()
+    {
+        // Initialize the room matrix
+        roomMatrix = new RoomNode[levelSize, levelSize];
+        InitializeRooms();
+    }
+
+    public void InitializeRooms()
+    {
+        for (int row = 0; row < levelSize; row++)
+        { for (int col = 0; col < levelSize; col++)
+            {
+                Vector3 roomPos = transform.position;
+                roomPos += new Vector3(roomScale * row, 0, roomScale * col);
+                RoomNode curRoom = Instantiate(roomNodePrefab, transform).GetComponent<RoomNode>();
+                curRoom.SetGridPosition(row, col, roomScale);
+
+                roomMatrix[row, col] = curRoom;
+            }
+        }
+    }
+
+    public void GenerateRoomsMethod1()
+    {
+
+    }
     /* Idea:
     
     - The level will be generated into a matrix of mxn size, occupied by RoomNodes (or their gameobjects).

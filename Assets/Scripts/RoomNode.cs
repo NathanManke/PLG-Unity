@@ -9,39 +9,30 @@ public class RoomNode : MonoBehaviour
     [SerializeField] private bool connectLeft   = false;
     [SerializeField] private bool connectRight  = false;
 
+    [SerializeField] private int[] gridPos;
     private GameObject up, down, left, right;
 
     // Start is called before the first frame update
     void Start()
     {
         // Get references to child direction indicators
-        up      = transform.Find("Up").gameObject;
-        down    = transform.Find("Down").gameObject;
-        left    = transform.Find("Left").gameObject;
-        right   = transform.Find("Right").gameObject;
+        up      = transform.Find("Container/Up").gameObject;
+        down    = transform.Find("Container/Down").gameObject;
+        left    = transform.Find("Container/Left").gameObject;
+        right   = transform.Find("Container/Right").gameObject;
         // Set connection based on indicators
         SetConnectUp(connectUp);
         SetConnectDown(connectDown);
         SetConnectLeft(connectRight);
         SetConnectRight(connectRight);
+        gridPos = new int[] {0, 0};
     }
 
     /*******************************
-     Public visualization functions
+     Coonectivity Functions
     *******************************/
-    public bool[] GetEnabledRooms()
-    {
-        bool[] result = {connectUp, connectDown, connectLeft, connectRight};
-        return result;
-    }
-    public void UpdateVisuals()
-    {
-        // Set up/down/left/right accordingly
-    }
 
-    /*******************************
-     Set or unset UDLR connections
-    *******************************/
+    /* UDLR */
     public void SetConnectUp(bool enable)
     {
         connectUp = enable;
@@ -57,6 +48,35 @@ public class RoomNode : MonoBehaviour
     public void SetConnectRight(bool enable)
     {
         connectRight = enable;
+    }
+    public bool[] GetConnections()
+    {
+        bool[] result = {connectUp, connectDown, connectLeft, connectRight};
+        return result;
+    }
+
+    /* Grid positioning */
+    public void SetGridPosition(int row, int col, float roomScale)
+    {
+        gridPos = new int[] {row, col};
+        transform.position = new Vector3(row * roomScale, 0, col * roomScale);
+        transform.localScale = Vector3.one * roomScale;
+    }
+
+    public int[] GetGridPosition()
+    {
+        return gridPos;
+    }
+
+    /*******************************
+     Visualization
+    *******************************/
+    public void UpdateVisuals()
+    {
+        up.SetActive(connectUp);
+        down.SetActive(connectDown);
+        left.SetActive(connectLeft);
+        right.SetActive(connectRight);
     }
 
 }
