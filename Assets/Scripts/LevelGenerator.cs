@@ -19,6 +19,8 @@ public class LevelGenerator : MonoBehaviour
     public GameObject   Triple;
     public GameObject   Quad;
 
+    public GameObject[] SpecialRooms;
+
     void Start()
     {
         // Initialize the room matrix
