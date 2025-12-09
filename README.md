@@ -1,2 +1,2 @@
 # PLG
-Procedural level generation project for CSC 486A
+This is a grid-based procedural level generation project.

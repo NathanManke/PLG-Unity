@@ -251,10 +251,10 @@ MonoBehaviour:
   connectDown: 0
   connectLeft: 0
   connectRight: 0
-  canConnectUp: 0
-  canConnectDown: 0
-  canConnectLeft: 0
-  canConnectRight: 0
+  ruleUp: 1
+  ruleDown: 1
+  ruleLeft: 1
+  ruleRight: 1
   gridPos: 
   hasBeenFound: 0
 --- !u!1 &7418261557950526249

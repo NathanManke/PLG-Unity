@@ -10,11 +10,11 @@ public class RoomNode : MonoBehaviour
     [SerializeField] private bool connectLeft       = false;
     [SerializeField] private bool connectRight      = false;
 
-    /* Rules of which directions the node can connect in */
-    [SerializeField] private bool ruleUp            = false;
-    [SerializeField] private bool ruleDown          = false;
-    [SerializeField] private bool ruleLeft          = false;
-    [SerializeField] private bool ruleRight         = false;
+    /* Rules describing which directions the node can connect towards*/
+    [SerializeField] private bool ruleUp            = true;
+    [SerializeField] private bool ruleDown          = true;
+    [SerializeField] private bool ruleLeft          = true;
+    [SerializeField] private bool ruleRight         = true;
 
     /* Position on the map grid */
     [SerializeField] private int[] gridPos          = {0, 0};
@@ -25,7 +25,6 @@ public class RoomNode : MonoBehaviour
     /* To store the game objects used to indicate connectivity in each direction */
     private GameObject upInd, downInd, leftInd, rightInd, orb;
 
-
     void Awake()
     {
         /* Get references to child direction indicators */
@@ -34,8 +33,6 @@ public class RoomNode : MonoBehaviour
         leftInd     = transform.Find("Container/Left").gameObject;
         rightInd    = transform.Find("Container/Right").gameObject;
         orb         = transform.Find("Container/Sphere").gameObject;
-
-        Debug.Log(orb == null);
 
         /* Set connectivity if values provided */
         SetConnectUp(connectUp);
@@ -48,7 +45,7 @@ public class RoomNode : MonoBehaviour
         Connectivity Functions
     *******************************/
 
-    /* Set UDLR connectivity */
+    /* Set/Get UDLR connectivity */
     public void SetConnectUp(bool enable)
     {
         connectUp = enable;
@@ -71,7 +68,7 @@ public class RoomNode : MonoBehaviour
         return result;
     }
 
-    /* Set UDLR rules */
+    /* Set/Get UDLR rules */
     public void SetRuleUp(bool enable)
     {
         ruleUp = enable;
@@ -93,6 +90,8 @@ public class RoomNode : MonoBehaviour
         bool[] result = {ruleUp, ruleDown, ruleLeft, ruleRight};
         return result;
     }
+
+    /* Rotate the room connectivity and rules 90 degrees */
     public void RotateRight()
     {
         /* Rotate current connections */
@@ -110,7 +109,7 @@ public class RoomNode : MonoBehaviour
         ruleRight       = temp;
     }
 
-    /* Get/set whether this node has been found in generation */
+    /* Set/Get whether this node has been found in generation */
     public void SetHasBeenFound(bool value)
     {
         hasBeenFound = value;
@@ -120,7 +119,7 @@ public class RoomNode : MonoBehaviour
         return hasBeenFound;
     }
 
-    /* Grid positioning */
+    /* Set/Get grid positioning */
     public void SetGridPosition(int X, int Z, float roomScale)
     {
         gridPos = new int[] {X, Z};
@@ -145,7 +144,6 @@ public class RoomNode : MonoBehaviour
 
     public void SetColor(Color c)
     {
-        if (orb == null) { Debug.Log("wtf"); return; }
         orb.GetComponent<Renderer>().material.color = c;
     }
 }
