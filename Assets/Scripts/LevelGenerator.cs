@@ -36,6 +36,7 @@ public class LevelGenerator : MonoBehaviour
     public int levelSize    = 10;
     public float roomScale  = 1;
     public int iterations   = 10;
+    public int maxExpandables = 5;
 
     /* Pefabs of rooms of different connectivity */
     [Header("Room Prefabs")]
@@ -120,7 +121,7 @@ public class LevelGenerator : MonoBehaviour
 
             /* Limit the number of rooms we can expand from */
 
-            while (expandables.Count > 10)
+            while (expandables.Count > maxExpandables)
             {
                 expandables.RemoveAt(0);
             }
@@ -145,12 +146,12 @@ public class LevelGenerator : MonoBehaviour
         int val = Random.Range(0, sumOfWeight);
 
         /* Determine which index corresponds to the range this random number landed on */
-        i = 0;
-        while (val > 0)
-        {
-            i++;
+        for (i = 0; i < expandables.Count; i++)
+        { 
             val -= 1 << i;
+            if (val < 0) return expandables[i];
         }
+        Debug.Log($"{expandables.Count}, {i}");
         return expandables[i];
     }
 

@@ -140,6 +140,7 @@ public class RoomNode : MonoBehaviour
         downInd.SetActive(connectDown);
         leftInd.SetActive(connectLeft);
         rightInd.SetActive(connectRight);
+        orb.SetActive(hasBeenFound);
     }
 
     public void SetColor(Color c)

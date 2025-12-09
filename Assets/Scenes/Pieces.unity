@@ -419,11 +419,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
       propertyPath: levelSize
-      value: 32
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
       propertyPath: iterations
-      value: 100
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: maxExpandables
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
