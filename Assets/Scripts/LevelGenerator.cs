@@ -21,8 +21,9 @@ public class LevelGenerator : MonoBehaviour
 
     public GameObject[] SpecialRooms;
 
-    void Start()
+    void Awake()
     {
+        Debug.Log(roomNodePrefab);
         // Initialize the room matrix
         roomMatrix = new RoomNode[levelSize, levelSize];
         DoGeneration();
@@ -37,22 +38,44 @@ public class LevelGenerator : MonoBehaviour
 
     public void InitializeRooms()
     {
-        for (int row = 0; row < levelSize; row++)
+        for (int X = 0; X < levelSize; X++)
         { 
-            for (int col = 0; col < levelSize; col++)
+            for (int Z = 0; Z < levelSize; Z++)
             {
-                Vector3 roomPos = transform.position;
-                roomPos += new Vector3(roomScale * row, 0, roomScale * col);
                 RoomNode curRoom = Instantiate(roomNodePrefab, transform).GetComponent<RoomNode>();
-                curRoom.SetGridPosition(row, col, roomScale);
+                curRoom.SetGridPosition(X, Z, roomScale);
 
-                roomMatrix[row, col] = curRoom;
+                /* Check if on border */
+                if (X == 0) curRoom.SetConnectLeft(false);
+                else if (X == levelSize - 1) curRoom.SetConnectRight(false);
+                if (Z == 0) curRoom.SetConnectDown(false);
+                else if (Z == levelSize - 1) curRoom.SetConnectUp(false);
+                roomMatrix[X,Z] = curRoom;
             }
         }
     }
 
     public void GenerateRoomsMethod1()
     {
+        /*
+        Initialize list of expandable rooms
+        initialize starting room
+
+        loop..
+            pick room from expandable rooms
+            pick a direction from connectable rooms
+            expand!
+            update connectivity for rooms involved
+            add to expandable rooms if appropriate
+            remove from expandable rooms if appropriate!!
+        */
+
+        // Initialize expandable rooms, pick starting room
+        List<RoomNode> expandables = new List<RoomNode>();
+        RoomNode startRoom = roomMatrix[levelSize/2, levelSize/2];
+        startRoom.SetColor(Color.red);
+        expandables.Add(startRoom);
+        
 
     }
 
@@ -66,7 +89,7 @@ public class LevelGenerator : MonoBehaviour
     - The information contained in the RoomNodes that occupy the cells of this structure will be used
     to generate the real level. The information they need to contain is the directions in which the room is connected.
     - The positions to place each real room is determined based on the cell position and the scale of each room.
-    The scale is assumed to be uniform for each room. The position is on a [column][row] basis.
+    The scale is assumed to be uniform for each room. The position is on a [column][X] basis.
 
 
     For the sake of debugging, this class will include a method called UpdateVisuals() that will iterate
