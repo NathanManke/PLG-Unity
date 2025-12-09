@@ -42,7 +42,7 @@ public class RoomNode : MonoBehaviour
     }
 
     /*******************************
-        Connectivity Functions
+     Connectivity Functions
     *******************************/
 
     /* Set/Get UDLR connectivity */
@@ -132,7 +132,7 @@ public class RoomNode : MonoBehaviour
     }
 
     /*******************************
-        Visualization
+     Visualization
     *******************************/
     public void UpdateVisuals()
     {

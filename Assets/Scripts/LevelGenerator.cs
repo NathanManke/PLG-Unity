@@ -5,7 +5,7 @@ using UnityEngine;
 public class LevelGenerator : MonoBehaviour
 {
     /*******************************
-        Constants
+     Constants
     *******************************/
 
     /* Up/Down/Left/Right coordinate offsets */
@@ -26,7 +26,7 @@ public class LevelGenerator : MonoBehaviour
     private int IndexRight          = 3;
 
     /*******************************
-        Fields
+     Fields
     *******************************/
 
     /* Prefab of RoomNodes that are used for generation */
@@ -35,6 +35,7 @@ public class LevelGenerator : MonoBehaviour
     /* Grid size, cell size */
     public int levelSize    = 10;
     public float roomScale  = 1;
+    public int iterations   = 10;
 
     /* Pefabs of rooms of different connectivity */
     [Header("Room Prefabs")]
@@ -60,8 +61,9 @@ public class LevelGenerator : MonoBehaviour
     void DoGeneration()
     {
         InitializeRooms();
-        GenerateRoomsMethod1();
+        GenerateRooms();
         PickAndPlace();
+        UpdateAllVisuals();
     }
 
     public void InitializeRooms()
@@ -88,21 +90,8 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
-    public void GenerateRoomsMethod1()
+    public void GenerateRooms()
     {
-        /*
-        Initialize list of expandable rooms
-        initialize starting room
-
-        loop..
-            pick room from expandable rooms
-            pick a direction from connectable rooms
-            expand!
-            update connectivity for rooms involved
-            add to expandable rooms if appropriate
-            remove from expandable rooms if appropriate!!
-        */
-
         /* Initialize list of rooms that can be grown from */
         List<RoomNode> expandables = new List<RoomNode>();
 
@@ -113,26 +102,33 @@ public class LevelGenerator : MonoBehaviour
         expandables.Add(startRoom);
 
         /* Main loop */
-        int numIter = 15;
-
-        for (int i = 0; i < numIter; i++)
+        for (int i = 0; i < iterations; i++)
         {
             /* Pick a room to expand from */
             RoomNode roomFrom = PickRoomToExpandFrom(expandables);
 
             /* Pick a direction to expand into */
-            RoomNode roomInto = PickRoomToExpandInto(roomFrom);
+            int[] direction = PickDirToExpandInto(roomFrom);
 
             /* Connect the rooms */
-
+            ConnectRooms(roomFrom, direction, expandables);
 
             /* Maintain expandables list */
+            RoomNode roomInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), direction);
+            if (!CheckCanExpand(roomFrom)) expandables.Remove(roomFrom);
+            if (!CheckCanExpand(roomInto)) expandables.Remove(roomInto);
 
+            /* Limit the number of rooms we can expand from */
+
+            while (expandables.Count > 10)
+            {
+                expandables.RemoveAt(0);
+            }
         }
     }
 
     /*******************************
-        Generation Helpers
+     Hallway Generation Helpers
     *******************************/
     
     /* Pick a room to expand from, weighted by recency */
@@ -143,45 +139,110 @@ public class LevelGenerator : MonoBehaviour
 
         /* Sum all weights */
         for (i = 0; i < expandables.Count; i++)
-        { sumOfWeight += i * (int)Mathf.Pow(2, i); }
+        { sumOfWeight += 1 << i; }
 
         /* Pick a number on the range */
         int val = Random.Range(0, sumOfWeight);
 
         /* Determine which index corresponds to the range this random number landed on */
-        i = -1;
-        while (val - (int)Mathf.Pow(2, ++i) >= 0) {}
-
+        i = 0;
+        while (val > 0)
+        {
+            i++;
+            val -= 1 << i;
+        }
         return expandables[i];
     }
 
-    public RoomNode PickRoomToExpandInto(RoomNode roomFrom)
+    public int[] PickDirToExpandInto(RoomNode roomFrom)
     {
-        List<RoomNode> finalCons    = new List<RoomNode>();
+        List<int[]> finalCons       = new List<int[]>();
         bool[] roomFromRules        = roomFrom.GetRules();
         bool[] roomFromCons         = roomFrom.GetConnections();
-        RoomNode curInto;
         
         /* Determine which directions we can connect into */
-        /* We are checking if the from room CAN connect, ISNT connected, and that the into room exists and CAN connect*/
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp);
+        
+        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp);
         if (roomFromRules[IndexUp] && !roomFromCons[IndexUp] && curInto && curInto.GetRules()[IndexDown]) 
-        { finalCons.Add(curInto); }
+        { finalCons.Add(gridUp); }
 
         curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown);
         if (roomFromRules[IndexDown] && !roomFromCons[IndexDown] && curInto && curInto.GetRules()[IndexUp]) 
-        { finalCons.Add(curInto); }
+        { finalCons.Add(gridDown); }
 
         curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft);
         if (roomFromRules[IndexLeft] && !roomFromCons[IndexLeft] && curInto && curInto.GetRules()[IndexRight]) 
-        { finalCons.Add(curInto); }
+        { finalCons.Add(gridLeft); }
 
         curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight);
         if (roomFromRules[IndexRight] && !roomFromCons[IndexRight] && curInto && curInto.GetRules()[IndexLeft]) 
-        { finalCons.Add(curInto); }
+        { finalCons.Add(gridRight); }
+        
+
+        /*
+        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp);
+        if (roomFromRules[IndexUp] && curInto && curInto.GetRules()[IndexDown]) 
+        { finalCons.Add(gridUp); }
+
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown);
+        if (roomFromRules[IndexDown] && curInto && curInto.GetRules()[IndexUp]) 
+        { finalCons.Add(gridDown); }
+
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft);
+        if (roomFromRules[IndexLeft] && curInto && curInto.GetRules()[IndexRight]) 
+        { finalCons.Add(gridLeft); }
+
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight);
+        if (roomFromRules[IndexRight] && curInto && curInto.GetRules()[IndexLeft]) 
+        { finalCons.Add(gridRight); }
+        */
         
         /* We assume finalCons is non-empty, since roomFrom must be an expandable room */
         return finalCons[Random.Range(0, finalCons.Count)];
+    }
+
+    public void ConnectRooms(RoomNode roomFrom, int[] direction, List<RoomNode> expandables)
+    {
+        /* Set connectivity appropriately */
+        RoomNode roomInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), direction);
+        if (direction == gridUp)
+        { roomFrom.SetConnectUp(true); roomInto.SetConnectDown(true); }
+        else if (direction == gridDown)
+        { roomFrom.SetConnectDown(true); roomInto.SetConnectUp(true); }
+        else if (direction == gridLeft)
+        { roomFrom.SetConnectLeft(true); roomInto.SetConnectRight(true); }
+        else if (direction == gridRight)
+        { roomFrom.SetConnectRight(true); roomInto.SetConnectLeft(true); }
+
+        /* Add to the expandables list if its a newly connected room */
+        if (roomInto.GetHasBeenFound()) return;
+        roomInto.SetHasBeenFound(true);
+        expandables.Add(roomInto);
+    }
+
+    public bool CheckCanExpand(RoomNode roomFrom)
+    {
+        bool[] roomFromRules        = roomFrom.GetRules();
+        bool[] roomFromCons         = roomFrom.GetConnections();
+
+        /* Determine if there is any room we can connect into */
+        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp);
+        if (roomFromRules[IndexUp] && !roomFromCons[IndexUp] && curInto && curInto.GetRules()[IndexDown])
+        { return true; }
+
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown);
+        if (roomFromRules[IndexDown] && !roomFromCons[IndexDown] && curInto && curInto.GetRules()[IndexUp]) 
+        { return true; }
+
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft);
+        if (roomFromRules[IndexLeft] && !roomFromCons[IndexLeft] && curInto && curInto.GetRules()[IndexRight]) 
+        { return true;}
+
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight);
+        if (roomFromRules[IndexRight] && !roomFromCons[IndexRight] && curInto && curInto.GetRules()[IndexLeft]) 
+        { return true; }
+
+        return false;
     }
 
     public RoomNode GetRoomAtGridPos(int[] gridPos, int[] offset = null)
@@ -201,5 +262,13 @@ public class LevelGenerator : MonoBehaviour
         /*
         TO DO... place hallways and special rooms (instantiate prefabs at correct locations)
         */
+    }
+
+    public void UpdateAllVisuals()
+    {
+        for (int X = 0; X < levelSize; X++)
+        { for (int Y = 0; Y < levelSize; Y++)
+            { roomMatrix[X, Y].UpdateVisuals(); }
+        }
     }
 }
