@@ -55,8 +55,10 @@ public class LevelGenerator : MonoBehaviour
     // Used for generation
     private List<RoomNode> roomMatrix;
     private List<RoomNode> expandables;
-    private List<RoomNode> unconnnecteds;
+    private List<RoomNode> unconnecteds;
     private RoomNode startRoom;
+
+    private int curIter = 0;
 
     void Awake()
     {
@@ -86,10 +88,11 @@ public class LevelGenerator : MonoBehaviour
             Destroy(roomMatrix[i].gameObject);
             roomMatrix.RemoveAt(i);
         }
+        curIter = 0;
 
         // Initialize level
         expandables  = new List<RoomNode>();
-        unconnnecteds = new List<RoomNode>();
+        unconnecteds = new List<RoomNode>();
 
         startRoom = Instantiate(roomNodePrefab, transform).GetComponent<RoomNode>();
         startRoom.SetHasBeenFound(true);
@@ -107,8 +110,9 @@ public class LevelGenerator : MonoBehaviour
     public void GenerateRooms()
     {
         // Main loop
-        List<RoomNode> newRooms = GenerateHallways(10);
-        //GenerateSpecialRoom();
+        List<RoomNode> newRooms = GenerateHallways(1);
+        curIter++;
+        if (curIter % 10 == 0) GenerateSpecialRoom();
         UpdateAllVisuals();
     }
 
@@ -121,7 +125,7 @@ public class LevelGenerator : MonoBehaviour
         List<RoomNode> generatedRooms = new List<RoomNode>();
         for (int i = 0; i < numIterations; i++)
         {
-            List<RoomNode> mostRecents = GetMostRecents(maxExpandables);
+            List<RoomNode> mostRecents = GetMostRecents(maxExpandables, expandables);
             // Pick a room to expand from
             RoomNode roomFrom = PickRoomToExpandFrom(mostRecents);
 
@@ -136,15 +140,15 @@ public class LevelGenerator : MonoBehaviour
     }
 
     // Get the most recently placed expandable rooms
-    public List<RoomNode> GetMostRecents(int numRecent)
+    public List<RoomNode> GetMostRecents(int numRecent, List<RoomNode> toGetFrom)
     {
         List<RoomNode> result = new List<RoomNode>();
 
-        if (expandables.Count <= maxExpandables) return expandables;
+        if (toGetFrom.Count <= numRecent) return toGetFrom;
 
-        for (int i = expandables.Count - maxExpandables; i < expandables.Count; i++)
+        for (int i = toGetFrom.Count - numRecent; i < toGetFrom.Count; i++)
         {
-            result.Add(expandables[i]);
+            result.Add(toGetFrom[i]);
         }
         return result;
     }
@@ -173,27 +177,35 @@ public class LevelGenerator : MonoBehaviour
 
     public int[] PickDirToExpandInto(RoomNode roomFrom)
     {
+        bool special = roomFrom.GetIsSpecial();
         List<int[]> finalCons       = new List<int[]>();
         bool[] roomFromRules        = roomFrom.GetRules();
         bool[] roomFromCons         = roomFrom.GetConnections();
         
         // Determine which directions we can connect into
         
-        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp);
+        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp, special);
         if (roomFromRules[IndexUp] && !roomFromCons[IndexUp] && curInto && curInto.GetRules()[IndexDown] && !curInto.GetIsSpecial()) 
-        { finalCons.Add(gridUp); }
+        { 
+            if (!special || curInto.GetHasBeenFound()) finalCons.Add(gridUp);
+        }
 
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown);
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown, special);
         if (roomFromRules[IndexDown] && !roomFromCons[IndexDown] && curInto && curInto.GetRules()[IndexUp] && !curInto.GetIsSpecial()) 
-        { finalCons.Add(gridDown); }
-
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft);
+        { 
+            if (!special || curInto.GetHasBeenFound()) finalCons.Add(gridDown);
+        }
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft, special);
         if (roomFromRules[IndexLeft] && !roomFromCons[IndexLeft] && curInto && curInto.GetRules()[IndexRight] && !curInto.GetIsSpecial()) 
-        { finalCons.Add(gridLeft); }
+        { 
+            if (!special || curInto.GetHasBeenFound()) finalCons.Add(gridLeft);
+        }
 
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight);
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight, special);
         if (roomFromRules[IndexRight] && !roomFromCons[IndexRight] && curInto && curInto.GetRules()[IndexLeft] && !curInto.GetIsSpecial()) 
-        { finalCons.Add(gridRight); }
+        { 
+            if (!special || curInto.GetHasBeenFound()) finalCons.Add(gridRight);
+        }
         
 
         /*
@@ -214,7 +226,6 @@ public class LevelGenerator : MonoBehaviour
         { finalCons.Add(gridRight); }
         */
        
-        
         // We assume finalCons is non-empty, since roomFrom must be an expandable room
         return finalCons[Random.Range(0, finalCons.Count)];
     }
@@ -238,7 +249,7 @@ public class LevelGenerator : MonoBehaviour
         {
             roomInto.SetHasBeenFound(true);
             expandables.Add(roomInto);
-            unconnnecteds.Remove(roomInto);
+            unconnecteds.Remove(roomInto);
             rval = true;
         }
         if (!CheckCanExpand(roomFrom)) expandables.Remove(roomFrom);
@@ -250,30 +261,31 @@ public class LevelGenerator : MonoBehaviour
 
     public bool CheckCanExpand(RoomNode roomFrom)
     {
+        bool rval = false;
         bool[] roomFromRules        = roomFrom.GetRules();
         bool[] roomFromCons         = roomFrom.GetConnections();
 
         // Determine if there is any room we can connect into
-        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp);
+        RoomNode curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridUp, roomFrom.GetIsSpecial());
         if (roomFromRules[IndexUp] && !roomFromCons[IndexUp] && curInto && curInto.GetRules()[IndexDown] && !curInto.GetIsSpecial())
-        { return true; }
+        { rval = true; }
 
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown);
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridDown, roomFrom.GetIsSpecial());
         if (roomFromRules[IndexDown] && !roomFromCons[IndexDown] && curInto && curInto.GetRules()[IndexUp] && !curInto.GetIsSpecial()) 
-        { return true; }
+        { rval = true; }
 
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft);
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridLeft, roomFrom.GetIsSpecial());
         if (roomFromRules[IndexLeft] && !roomFromCons[IndexLeft] && curInto && curInto.GetRules()[IndexRight] && !curInto.GetIsSpecial()) 
-        { return true;}
+        { rval = true;}
 
-        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight);
+        curInto = GetRoomAtGridPos(roomFrom.GetGridPosition(), gridRight, roomFrom.GetIsSpecial());
         if (roomFromRules[IndexRight] && !roomFromCons[IndexRight] && curInto && curInto.GetRules()[IndexLeft] && !curInto.GetIsSpecial()) 
-        { return true; }
+        { rval = true; }
 
-        return false;
+        return rval;
     }
 
-    public RoomNode GetRoomAtGridPos(int[] gridPos, int[] offset = null)
+    public RoomNode GetRoomAtGridPos(int[] gridPos, int[] offset = null, bool special = false)
     {
         // Add offset and check for existence
         offset ??= defaultOffset;
@@ -285,11 +297,12 @@ public class LevelGenerator : MonoBehaviour
             if (curPos[0] == resultPos[0] && curPos[1] == resultPos[1]) return room;
         }
 
-        // No room found, so create a new one
+        // No room found, so create a new one, unless we are checking from a special room
+        if (special) return null;
         RoomNode newRoom = Instantiate(roomNodePrefab, transform).GetComponent<RoomNode>();
         newRoom.SetGridPosition(resultPos[IndexX], resultPos[IndexY], roomScale);
         roomMatrix.Add(newRoom);
-        unconnnecteds.Add(newRoom);
+        unconnecteds.Add(newRoom);
         Debug.Log($"New room at {resultPos[IndexX]} {resultPos[1]}");
         return newRoom;
     }
@@ -300,7 +313,21 @@ public class LevelGenerator : MonoBehaviour
 
     public void GenerateSpecialRoom()
     {
-        return;
+        // Get most recent unconnecteds
+        List<RoomNode> mostRecents = GetMostRecents(maxExpandables, unconnecteds);
+
+        // Pick randomly, set to special
+        RoomNode special = mostRecents[Random.Range(0, mostRecents.Count)];
+        special.SetColor(Color.cyan);
+        special.UpdateVisuals();
+        special.SetIsSpecial(true);
+        unconnecteds.Remove(special);
+
+        // Find out which direction it can expand into
+        int[] dir = PickDirToExpandInto(special);
+
+        // Expand... set specialness appropriately
+        ConnectRooms(special, dir);
     }
     public RoomNode PlaceSpecialRoom(RoomNode roomFrom)
     {
