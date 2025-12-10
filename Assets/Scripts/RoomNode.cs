@@ -25,6 +25,10 @@ public class RoomNode : MonoBehaviour
     /* To store the game objects used to indicate connectivity in each direction */
     private GameObject upInd, downInd, leftInd, rightInd, orb;
 
+    /* Whether this node is used in a special room */
+    [SerializeField] private bool isSpecial         = false;
+    [SerializeField] private bool connectsToSpecial = false;
+
     void Awake()
     {
         /* Get references to child direction indicators */
@@ -132,6 +136,28 @@ public class RoomNode : MonoBehaviour
     }
 
     /*******************************
+     For placement
+    *******************************/
+
+    public void SetIsSpecial(bool val)
+    {
+        isSpecial = val;
+    }
+    public bool GetIsSpecial()
+    {
+        return isSpecial;
+    }
+
+    public void SetConnectsToSpecial(bool val)
+    {
+        connectsToSpecial = val;
+    }
+    public bool GetConnectsToSpecial()
+    {
+        return connectsToSpecial;
+    }
+
+    /*******************************
      Visualization
     *******************************/
     public void UpdateVisuals()
@@ -140,7 +166,6 @@ public class RoomNode : MonoBehaviour
         downInd.SetActive(connectDown);
         leftInd.SetActive(connectLeft);
         rightInd.SetActive(connectRight);
-        orb.SetActive(hasBeenFound);
     }
 
     public void SetColor(Color c)

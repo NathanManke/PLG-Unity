@@ -44,3 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e50482a2606e2d45b6fcb056b4d9841, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  RoomPrefab: {fileID: 6895044274022935866, guid: da688f6f14433ac4eba531a49770a712, type: 3}
+  ConSpec: 
+  roomNodePrefab: {fileID: 6895044274022935866, guid: 97c8e2075faa8d04e8ca054bcf3e5319, type: 3}
+  localNode: {fileID: 0}

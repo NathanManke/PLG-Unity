@@ -5,17 +5,26 @@ using UnityEngine;
 public class SpecialRoom : MonoBehaviour
 {
     public GameObject RoomPrefab;
-    public float rotation;
-    public int width, height;
+    // public int width, height;
 
     [TextArea] public string ConSpec;
 
     // To specify what parts can connect to other rooms
-    public RoomNode[,] RoomNodeMatrix;
+    // public RoomNode[,] RoomNodeMatrix;
+    public GameObject roomNodePrefab;
+    public RoomNode localNode;
 
 
-    public void Start()
+    public void Awake()
     {
-        // Initialize connectivity matrix based on conspec
+        localNode = Instantiate(roomNodePrefab).GetComponent<RoomNode>();
+        localNode.SetIsSpecial(true);
+
+        /* For now, assume it only connects in one direction */
+        localNode.SetRuleUp(false);
+        localNode.SetRuleDown(false);
+        localNode.SetRuleLeft(false);
+        localNode.SetRuleRight(false);
+        localNode.SetColor(Color.green);
     }
 }
