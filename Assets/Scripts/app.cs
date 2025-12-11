@@ -15,17 +15,17 @@ public class app : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R) && levelGenerator.GetComponent<LevelGenerator>().canGenerate)
+        if (Input.GetKeyDown(KeyCode.R) && levelGenerator.GetComponent<LevelGenerator>())
         {
             levelGenerator.GetComponent<LevelGenerator>().InitializeRooms();
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && levelGenerator.GetComponent<LevelGenerator>().canGenerate)
+        if (Input.GetKeyDown(KeyCode.Space) && levelGenerator.GetComponent<LevelGenerator>())
         {
             levelGenerator.GetComponent<LevelGenerator>().GenerateRooms();
         }
 
-        if (Input.GetKeyDown(KeyCode.P) && levelGenerator.GetComponent<LevelGenerator>().canGenerate)
+        if (Input.GetKeyDown(KeyCode.P) && levelGenerator.GetComponent<LevelGenerator>())
         {
             levelGenerator.GetComponent<LevelGenerator>().PickAndPlace();
         }

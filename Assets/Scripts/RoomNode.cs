@@ -4,41 +4,40 @@ using UnityEngine;
 
 public class RoomNode : MonoBehaviour
 {
-    /* Whether the node is connected in any direction */
+    // Whether the node is connected in any direction
     [SerializeField] private bool connectUp         = false;
     [SerializeField] private bool connectDown       = false;
     [SerializeField] private bool connectLeft       = false;
     [SerializeField] private bool connectRight      = false;
 
-    /* Rules describing which directions the node can connect towards*/
+    // Rules describing which directions the node can connect towards
     [SerializeField] private bool ruleUp            = true;
     [SerializeField] private bool ruleDown          = true;
     [SerializeField] private bool ruleLeft          = true;
     [SerializeField] private bool ruleRight         = true;
 
-    /* Position on the map grid */
+    // Position on the map grid
     [SerializeField] private int[] gridPos          = {0, 0};
 
-    /* Whether this node has been connected into the rest of the map yet */
+    // Whether this node has been connected into the rest of the map yet
     [SerializeField] private bool hasBeenFound      = false;
 
-    /* To store the game objects used to indicate connectivity in each direction */
+    // To store the game objects used to indicate connectivity in each direction
     private GameObject upInd, downInd, leftInd, rightInd, orb;
 
-    /* Whether this node is used in a special room */
+    // Whether this node is used in a special room
     [SerializeField] private bool isSpecial         = false;
-    [SerializeField] private bool connectsToSpecial = false;
 
     void Awake()
     {
-        /* Get references to child direction indicators */
+        // Get references to child direction indicators 
         upInd       = transform.Find("Container/Up").gameObject;
         downInd     = transform.Find("Container/Down").gameObject;
         leftInd     = transform.Find("Container/Left").gameObject;
         rightInd    = transform.Find("Container/Right").gameObject;
         orb         = transform.Find("Container/Sphere").gameObject;
 
-        /* Set connectivity if values provided */
+        // Set connectivity if values provided
         SetConnectUp(connectUp);
         SetConnectDown(connectDown);
         SetConnectLeft(connectRight);
@@ -49,7 +48,7 @@ public class RoomNode : MonoBehaviour
      Connectivity Functions
     *******************************/
 
-    /* Set/Get UDLR connectivity */
+    // Set/Get UDLR connectivity
     public void SetConnectUp(bool enable)
     {
         connectUp = enable;
@@ -72,7 +71,7 @@ public class RoomNode : MonoBehaviour
         return result;
     }
 
-    /* Set/Get UDLR rules */
+    // Set/Get UDLR rules
     public void SetRuleUp(bool enable)
     {
         ruleUp = enable;
@@ -95,17 +94,17 @@ public class RoomNode : MonoBehaviour
         return result;
     }
 
-    /* Rotate the room connectivity and rules 90 degrees */
+    // Rotate the room connectivity and rules 90 degrees
     public void RotateRight()
     {
-        /* Rotate current connections */
+        // Rotate current connections
         bool temp       = connectUp;
         connectUp       = connectLeft;
         connectLeft     = connectDown;
         connectDown     = connectRight;
         connectRight    = temp;
 
-        /* Rotate rules of connectivity */
+        // Rotate rules of connectivity
         temp            = ruleUp;
         ruleUp          = ruleLeft;
         ruleLeft        = ruleDown;
@@ -113,7 +112,11 @@ public class RoomNode : MonoBehaviour
         ruleRight       = temp;
     }
 
-    /* Set/Get whether this node has been found in generation */
+    /*******************************
+     Placement Properties
+    *******************************/
+
+    // Set/Get whether this node has been found in generation
     public void SetHasBeenFound(bool value)
     {
         hasBeenFound = value;
@@ -123,7 +126,7 @@ public class RoomNode : MonoBehaviour
         return hasBeenFound;
     }
 
-    /* Set/Get grid positioning */
+    // Set/Get grid positioning
     public void SetGridPosition(int X, int Z, float roomScale)
     {
         gridPos = new int[] {X, Z};
@@ -135,10 +138,6 @@ public class RoomNode : MonoBehaviour
         return gridPos;
     }
 
-    /*******************************
-     For placement
-    *******************************/
-
     public void SetIsSpecial(bool val)
     {
         isSpecial = val;
@@ -148,24 +147,16 @@ public class RoomNode : MonoBehaviour
         return isSpecial;
     }
 
-    public void SetConnectsToSpecial(bool val)
-    {
-        connectsToSpecial = val;
-    }
-    public bool GetConnectsToSpecial()
-    {
-        return connectsToSpecial;
-    }
-
     /*******************************
      Visualization
     *******************************/
-    public void UpdateVisuals()
+    public void UpdateVisuals(bool val)
     {
-        upInd.SetActive(connectUp);
-        downInd.SetActive(connectDown);
-        leftInd.SetActive(connectLeft);
-        rightInd.SetActive(connectRight);
+        upInd.SetActive(connectUp && val);
+        downInd.SetActive(connectDown && val);
+        leftInd.SetActive(connectLeft && val);
+        rightInd.SetActive(connectRight && val);
+        orb.SetActive(val);
     }
 
     public void SetColor(Color c)
