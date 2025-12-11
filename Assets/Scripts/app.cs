@@ -24,5 +24,10 @@ public class app : MonoBehaviour
         {
             levelGenerator.GetComponent<LevelGenerator>().GenerateRooms();
         }
+
+        if (Input.GetKeyDown(KeyCode.P) && levelGenerator.GetComponent<LevelGenerator>().canGenerate)
+        {
+            levelGenerator.GetComponent<LevelGenerator>().PickAndPlace();
+        }
     }
 }

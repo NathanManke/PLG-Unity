@@ -58,11 +58,13 @@ public class LevelGenerator : MonoBehaviour
     private List<RoomNode> unconnecteds;
     private RoomNode startRoom;
 
+    private List<GameObject> realRooms;
     private int curIter = 0;
 
     void Awake()
     {
         roomMatrix = new List<RoomNode>();
+        realRooms  = new List<GameObject>();
     }
 
     public void SetSpecialRoomsToPlace(List<GameObject> SRIn)
@@ -87,6 +89,11 @@ public class LevelGenerator : MonoBehaviour
         {
             Destroy(roomMatrix[i].gameObject);
             roomMatrix.RemoveAt(i);
+        }
+        for (int i = realRooms.Count - 1; i >= 0; i--)
+        {
+            Destroy(realRooms[i].gameObject);
+            realRooms.RemoveAt(i);
         }
         curIter = 0;
 
@@ -329,15 +336,6 @@ public class LevelGenerator : MonoBehaviour
         // Expand... set specialness appropriately
         ConnectRooms(special, dir);
     }
-    public RoomNode PlaceSpecialRoom(RoomNode roomFrom)
-    {
-        return null;
-    }
-
-    public RoomNode GetFurthestHallway(List<RoomNode> toCheck, RoomNode origin)
-    {
-        return null;
-    }
 
     public float GetRoomDistanceSqrd(RoomNode r1, RoomNode r2)
     {
@@ -354,7 +352,73 @@ public class LevelGenerator : MonoBehaviour
     {
         /*
         TO DO... place hallways and special rooms (instantiate prefabs at correct locations)
-       */
+        */
+        // Hallways!
+        for (int i = roomMatrix.Count - 1; i >= 0; i--)
+        {
+            RoomNode room = roomMatrix[i];
+            if (room.GetIsSpecial()) continue;
+            PlaceHallway(room);
+            roomMatrix.RemoveAt(i);
+            Destroy(room.gameObject);
+        }
+
+
+    }
+
+    public void PlaceHallway(RoomNode room)
+    {
+        // Determine the type
+        int udlr = 0b0000;
+        int cons = 0;
+
+        foreach (bool val in room.GetConnections())
+        {
+            int b = val? 1 : 0;
+            udlr <<= 1;
+            udlr |= b;
+            cons += b;
+        }
+
+        GameObject type;
+        float rotation = 0f;
+        if (cons == 0) return;
+
+        // Single
+        else if (cons == 1) 
+        {
+            type = Single;
+            if      (udlr == 0b0001)    rotation = 0f;     
+            else if (udlr == 0b0100)    rotation = 90f;    
+            else if (udlr == 0b0010)    rotation = 180f;
+            else                        rotation = -90f;
+        }
+        else if (cons == 3) 
+        {
+            type = Triple;
+            if      (udlr == 0b1101)    rotation = 0f;
+            else if (udlr == 0b0111)    rotation = 90f;
+            else if (udlr == 0b1110)    rotation = 180f;
+            else                        rotation = -90f;
+        }
+        else if (cons == 4) type = Quad;
+
+        // Double I or L
+        else
+        {
+            if      (udlr == 0b0011)    { type = DoubleI; rotation = 0f;      }
+            else if (udlr == 0b1100)    { type = DoubleI; rotation = 90f;     }
+
+            else if (udlr == 0b0101)    { type = DoubleL; rotation = 0f;      }
+            else if (udlr == 0b0110)    { type = DoubleL; rotation = 90f;    }
+            else if (udlr == 0b1010)    { type = DoubleL; rotation = 180f;    }
+            else                        { type = DoubleL; rotation = -90f;     }
+        }
+
+        GameObject realRoom = Instantiate(type, room.transform.position, Quaternion.Euler(new Vector3(0f, rotation, 0f)), transform);
+        realRoom.transform.localScale = new Vector3(roomScale, roomScale, roomScale);
+        realRooms.Add(realRoom);
+
     }
 
     public void UpdateAllVisuals()

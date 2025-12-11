@@ -413,6 +413,26 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: Quad
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: 8eacfa46d2d3acd4a8968b15952d9d47, type: 3}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: Single
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: da688f6f14433ac4eba531a49770a712, type: 3}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: Triple
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: 5a4c45550556fa947aac68b61508ec69, type: 3}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: DoubleI
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: d6722f9a6f359af408afe2af2b9617c2, type: 3}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: DoubleL
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: a240c5ffe1169614783c86b4b666c043, type: 3}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
       propertyPath: levelSize
       value: 9
       objectReference: {fileID: 0}
