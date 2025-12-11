@@ -338,8 +338,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelGenerator: {fileID: 688677788}
-  sr:
-  - {fileID: 3380056756178998686, guid: aef97b0aa659ef244b168f9393b77a4d, type: 3}
 --- !u!4 &568153205
 Transform:
   m_ObjectHideFlags: 0
@@ -437,6 +435,10 @@ PrefabInstance:
       value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: roomScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
       propertyPath: iterations
       value: 300
       objectReference: {fileID: 0}
@@ -444,6 +446,22 @@ PrefabInstance:
       propertyPath: maxExpandables
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: considerSpecialRooms
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: specialRoomsToPlace.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: specialRoomsToPlace.Array.data[0]
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: 0d3e305d724bfe449a29372075016056, type: 3}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: specialRoomsToPlace.Array.data[1]
+      value: 
+      objectReference: {fileID: 6895044274022935866, guid: 9b8e2b199774746499435cd4372c6275, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

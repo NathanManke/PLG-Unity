@@ -25,6 +25,8 @@ public class LevelGenerator : MonoBehaviour
     private int IndexLeft           = 2;
     private int IndexRight          = 3;
 
+    private bool visualize          = false;
+
     /*******************************
      Internal Use
     *******************************/
@@ -83,7 +85,7 @@ public class LevelGenerator : MonoBehaviour
     }
 
     // The easily callable method that generates the level
-    public void DoGeneration(bool visualize)
+    public void DoGeneration()
     {
         Initialize();
         GenerateRooms();
@@ -507,5 +509,11 @@ public class LevelGenerator : MonoBehaviour
         {
             room.UpdateVisuals(val);
         }
+    }
+
+    public void ToggleVisuals()
+    {
+        visualize = !visualize;
+        UpdateAllVisuals(visualize);
     }
 }
