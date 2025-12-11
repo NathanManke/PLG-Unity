@@ -17,7 +17,7 @@ public class LevelGenerator : MonoBehaviour
 
     // Index of X and Y coordinates in a gridPos
     private int IndexX              = 0;
-    private int IndexY              = 1;
+    private int IndexZ              = 1;
 
     // UDLR indices
     private int IndexUp             = 0;
@@ -37,8 +37,13 @@ public class LevelGenerator : MonoBehaviour
     private List<RoomNode> expandables;             // Contains all expandable roomNodes
     private List<RoomNode> unconnecteds;            // Contains all unconnected roomNodes
     private RoomNode startRoom;                     // The room from which generation starts
+    private List<RoomNode> availableSpecials;       // Available spots to place a special room
 
     private List<GameObject> realHalls;             // Contains all the instantiated hallways
+    private List<GameObject> realSpecials;          // Contains all the instantiated special rooms
+
+    private Transform nodeContainer;                // Transform to parent all roomNodes
+    private Transform roomContainer;                // Transform to parent all placed rooms
 
     /*******************************
      System Parameters
@@ -52,74 +57,113 @@ public class LevelGenerator : MonoBehaviour
     public GameObject   Triple;
     public GameObject   Quad;
 
-    // Prefabs of the special rooms that need to be placed in the level
-    [Header("Special Rooms")]
-    public List<GameObject> specialRoomsToPlace;
-    public int iterationsBetweenSpecial = 10;
-
-    public float roomScale  = 1;
     [Header("Generation Parameters")]
     public int recentPoolSize = 5;
+    public int desiredIterations = 10;
 
+    public float roomScale  = 1;
+
+
+    // Prefabs of the special rooms that need to be placed in the level
+    [Header("Special Rooms")]
+    public bool considerSpecialRooms;
+    public List<GameObject> specialRoomsToPlace;
+    public int iterationsBetweenSpecialPlacement = 10;
+
+    
+    // Initialize the all-containing lists
     void Awake()
     {
-        allRoomNodes = new List<RoomNode>();
-        realHalls  = new List<GameObject>();
+        allRoomNodes    = new List<RoomNode>();
+        realHalls       = new List<GameObject>();
+        realSpecials    = new List<GameObject>();
+
+        nodeContainer = transform.Find("Nodes");
+        roomContainer = transform.Find("Rooms");
     }
 
-    public void SetSpecialRoomsToPlace(List<GameObject> SRIn)
+    // The easily callable method that generates the level
+    public void DoGeneration(bool visualize)
     {
-        specialRoomsToPlace = SRIn;
-    }
-
-    // The easily callable method
-    public void DoGeneration()
-    {
-        InitializeRooms();
+        Initialize();
         GenerateRooms();
         PickAndPlace();
-        UpdateAllVisuals(true);
+        UpdateAllVisuals(visualize);
     }
 
-    // Ensure all data structures and initialize relevant data structures
-    public void InitializeRooms()
+    /*******************************
+     Initialization Helpers
+    *******************************/
+
+    // Empty lists used in generation and destroy roomNode instances
+    public void ClearGenerationObjects()
     {
-        // Reset everything
         for (int i = allRoomNodes.Count - 1; i >= 0; i--)
         {
             Destroy(allRoomNodes[i].gameObject);
             allRoomNodes.RemoveAt(i);
         }
-        for (int i = realHalls.Count - 1; i >= 0; i--)
-        {
-            Destroy(realHalls[i].gameObject);
-            realHalls.RemoveAt(i);
-        }
         expandables  = new List<RoomNode>();
         unconnecteds = new List<RoomNode>();
+        availableSpecials = new List<RoomNode>();
+    }
+
+    // Empty lists containing instantiated level objects and destroy their instances
+    public void ClearInstantiatedRooms()
+    {
+        for (int i = realSpecials.Count - 1; i >= 0; i--)
+        {
+            Destroy(realSpecials[i]);
+            realSpecials.RemoveAt(i);
+        }
+        for (int i = realHalls.Count - 1; i >= 0; i--)
+        {
+            Destroy(realHalls[i]);
+            realHalls.RemoveAt(i);
+        }
+    }
+
+    // Initialize the program for generation
+    public void Initialize()
+    {
+        // Reset everything
+        ClearGenerationObjects();
+        ClearInstantiatedRooms();
 
         // The first room
-        startRoom = Instantiate(roomNodePrefab, transform).GetComponent<RoomNode>();
+        startRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
+        startRoom.SetGridPosition(0, 0);
         startRoom.SetHasBeenFound(true);
-        startRoom.SetColor(Color.red);
-        startRoom.SetGridPosition(0, 0, roomScale);
+        startRoom.SetColor(Color.yellow);
+
 
         expandables.Add(startRoom);
         allRoomNodes.Add(startRoom);
     }
 
-    public void GenerateRooms()
-    {
-        // Main loop
-        List<RoomNode> newRooms = GenerateHallways(10);
-        GenerateSpecialRoom();
-        UpdateAllVisuals(true);
-    }
-
     /*******************************
      Generation Helpers
     *******************************/
-    
+
+    public void GenerateRooms()
+    {
+        int numSpecial      = specialRoomsToPlace.Count;
+
+        // Determine the total number of iterations that must be done
+        int totalIters      = Mathf.Max(desiredIterations, numSpecial * iterationsBetweenSpecialPlacement);
+
+        // Do generation
+        for (int itersComplete = 1; itersComplete <= totalIters; itersComplete++)
+        {
+            List<RoomNode> newRooms = GenerateHallways(1);
+            if (considerSpecialRooms && itersComplete % iterationsBetweenSpecialPlacement == 0) 
+            {
+                Debug.Log("Generating special room");
+                GenerateSpecialRoom();
+            }
+        }
+    }
+
     // Perform numIterations hallway generations
     public List<RoomNode> GenerateHallways(int numIterations)
     {
@@ -275,7 +319,7 @@ public class LevelGenerator : MonoBehaviour
     {
         // Add offset and check for existence
         offset ??= defaultOffset;
-        int[] resultPos = {gridPos[IndexX] + offset[IndexX], gridPos[IndexY] + offset[IndexY]};
+        int[] resultPos = {gridPos[IndexX] + offset[IndexX], gridPos[IndexZ] + offset[IndexZ]};
 
         foreach (RoomNode room in allRoomNodes)
         {
@@ -286,8 +330,9 @@ public class LevelGenerator : MonoBehaviour
         // None found, so initialize a room at that position if desired
         if (preventNew) return null;
 
-        RoomNode newRoom = Instantiate(roomNodePrefab, transform).GetComponent<RoomNode>();
-        newRoom.SetGridPosition(resultPos[IndexX], resultPos[IndexY], roomScale);
+        RoomNode newRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
+        newRoom.SetGridPosition(resultPos[IndexX], resultPos[IndexZ]);
+        newRoom.transform.localPosition = GetCoords(newRoom, roomScale);
         allRoomNodes.Add(newRoom);
         unconnecteds.Add(newRoom);
 
@@ -308,7 +353,9 @@ public class LevelGenerator : MonoBehaviour
         RoomNode special = mostRecents[Random.Range(0, mostRecents.Count)];
         special.SetColor(Color.cyan); 
         special.SetIsSpecial(true);
+        special.SetHasBeenFound(true);
         unconnecteds.Remove(special);
+        availableSpecials.Add(special);
 
         // Determine a direction to connect this special room in
         int[] dir = PickDirToExpandInto(special);
@@ -318,6 +365,7 @@ public class LevelGenerator : MonoBehaviour
         foreach (int[] curDir in new int[][] { gridUp, gridDown, gridLeft, gridRight})
         {
             RoomNode curRoom = GetRoomAtGridPos(special.GetGridPosition(), curDir, true);
+            // Only check existing, connected nodes
             if (curRoom && curRoom.GetHasBeenFound() && !CheckCanExpand(curRoom)) expandables.Remove(curRoom);
         }
     }
@@ -329,7 +377,7 @@ public class LevelGenerator : MonoBehaviour
         int[] pos2 = r2.GetGridPosition();
 
         float distX = pos1[IndexX] - pos2[IndexX];
-        float distY = pos1[IndexY] - pos2[IndexY];
+        float distY = pos1[IndexZ] - pos2[IndexZ];
 
         return distX * distX + distY * distY;
     }
@@ -341,15 +389,51 @@ public class LevelGenerator : MonoBehaviour
     // Place all hallways and special rooms
     public void PickAndPlace()
     {
-        // Hallways!
+        // Do special rooms first
+        for (int i = specialRoomsToPlace.Count - 1; i >= 0; i--)
+        {
+            // Pick a special room to place this at
+            if (availableSpecials.Count == 0)
+            {
+                Debug.Log("No special room spots available!"); break;
+            }
+
+            // Get room prefab and random special room spot to place it at
+            GameObject specialPrefab    = specialRoomsToPlace[i];
+            RoomNode specialRoom        = availableSpecials[Random.Range(0, availableSpecials.Count)];
+            PlaceSpecial(specialRoom, specialPrefab);
+            availableSpecials.Remove(specialRoom);
+        }
+
+        // Make remaining available special rooms non-special
+        for (int i = availableSpecials.Count - 1; i >= 0; i--)
+        {
+            availableSpecials[i].SetIsSpecial(false);
+            availableSpecials.RemoveAt(i);
+        }
+        
+        // Generate hallways
         for (int i = allRoomNodes.Count - 1; i >= 0; i--)
         {
             RoomNode room = allRoomNodes[i];
             if (room.GetIsSpecial()) continue;
             PlaceHallway(room);
-            allRoomNodes.RemoveAt(i);
-            Destroy(room.gameObject);
         }
+    }
+
+    public void PlaceSpecial(RoomNode specialRoom, GameObject specialPrefab)
+    {
+        float rotation  = 0f;
+        bool[] cons     = specialRoom.GetConnections();
+
+        if      (cons[IndexUp])     rotation = -90f;
+        else if (cons[IndexDown])   rotation = 90f;
+        else if (cons[IndexLeft])   rotation = 180f;
+
+        GameObject realSpecial = Instantiate(specialPrefab, roomContainer);
+        realSpecial.transform.localPosition = GetCoords(specialRoom, roomScale);
+        realSpecial.transform.localRotation = Quaternion.Euler(new Vector3(0f, rotation, 0f));
+        realSpecials.Add(realSpecial);
     }
 
     // Determine the given hallway's type, rotation and place appropriately
@@ -404,10 +488,17 @@ public class LevelGenerator : MonoBehaviour
         }
 
         // Instantiate the real room
-        GameObject realRoom = Instantiate(type, room.transform.position, Quaternion.Euler(new Vector3(0f, rotation, 0f)), transform);
-        realRoom.transform.localScale = new Vector3(roomScale, roomScale, roomScale);
+        GameObject realRoom = Instantiate(type, roomContainer, false);
+        realRoom.transform.localPosition = GetCoords(room, roomScale);
+        realRoom.transform.localRotation = Quaternion.Euler(new Vector3(0f, rotation, 0f));
         realHalls.Add(realRoom);
+    }
 
+    // Get realword positioning of a room
+    public Vector3 GetCoords(RoomNode room, float scale)
+    {
+        int[] gridPos = room.GetGridPosition();
+        return new Vector3(gridPos[IndexX] * scale, 0f, gridPos[IndexZ] * scale);
     }
 
     public void UpdateAllVisuals(bool val)

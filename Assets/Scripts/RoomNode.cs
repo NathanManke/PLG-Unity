@@ -127,11 +127,9 @@ public class RoomNode : MonoBehaviour
     }
 
     // Set/Get grid positioning
-    public void SetGridPosition(int X, int Z, float roomScale)
+    public void SetGridPosition(int X, int Z)
     {
         gridPos = new int[] {X, Z};
-        transform.position = new Vector3(X * roomScale, 0, Z * roomScale);
-        transform.Find("Container").localScale = Vector3.one * roomScale;
     }
     public int[] GetGridPosition()
     {
