@@ -156,7 +156,7 @@ public class RoomNode : MonoBehaviour
         downInd.SetActive(connectDown && val);
         leftInd.SetActive(connectLeft && val);
         rightInd.SetActive(connectRight && val);
-        orb.SetActive(val);
+        orb.SetActive(hasBeenFound && val);
     }
 
     // Sets the colour of the sphere

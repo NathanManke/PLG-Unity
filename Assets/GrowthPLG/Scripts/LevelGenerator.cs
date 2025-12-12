@@ -26,14 +26,14 @@ public class LevelGenerator : MonoBehaviour
     private const int IndexRight          = 3;
 
     /*******************************
-     Internal Use
+     Generation Use
     *******************************/
 
     // Prefab of RoomNodes that are used for generation
     public GameObject roomNodePrefab;
 
     // Used for generation
-    private RoomNode startRoom;                     // The room from which generation starts
+    private RoomNode originRoom;                     // The room from which generation starts
     private List<RoomNode> allRoomNodes;            // Contains every roomNode created in the round of generation
     private List<RoomNode> expandables;             // Contains all expandable roomNodes
     private List<RoomNode> unconnecteds;            // Contains all unconnected roomNodes
@@ -45,6 +45,21 @@ public class LevelGenerator : MonoBehaviour
     private Transform nodeContainer;                // Transform to parent all roomNodes
     private Transform roomContainer;                // Transform to parent all placed rooms
     private bool visualize;                         // Whether or not to visualize 
+
+    /*******************************
+     Getters for Everything Above
+    *******************************/
+
+    public RoomNode GetOriginRoom()                 { return originRoom; }
+    public List<RoomNode> GetAllRoomNodes()         { return allRoomNodes; }
+    public List<RoomNode> GetExpandables()          { return expandables; }
+    public List<RoomNode> GetUnconnecteds()         { return unconnecteds; }
+    public List<RoomNode> GetAvailableSpecials()    { return availableSpecials; }
+    public List<GameObject> GetRealHalls()          { return realHalls; }
+    public List<GameObject> GetRealSpecials()       { return realSpecials; }
+    public Transform GetNodeContainer()             { return nodeContainer; }
+    public Transform GetRoomContainer()             { return roomContainer; }
+    public bool GetVisualize()                      { return visualize; }
 
     /*******************************
      System Parameters
@@ -104,14 +119,14 @@ public class LevelGenerator : MonoBehaviour
         ClearInstantiatedRooms();
 
         // The first room
-        startRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
-        startRoom.SetGridPosition(0, 0);
-        startRoom.SetHasBeenFound(true);
-        startRoom.SetColor(Color.yellow);
+        originRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
+        originRoom.SetGridPosition(0, 0);
+        originRoom.SetHasBeenFound(true);
+        originRoom.SetColor(Color.yellow);
 
 
-        expandables.Add(startRoom);
-        allRoomNodes.Add(startRoom);
+        expandables.Add(originRoom);
+        allRoomNodes.Add(originRoom);
     }
 
     // Empty lists used in generation and destroy roomNode instances
@@ -351,16 +366,10 @@ public class LevelGenerator : MonoBehaviour
     public void PickAndPlace()
     {
         // Do special rooms first
-        for (int i = specialRoomsToPlace.Count - 1; i >= 0; i--)
+        foreach (GameObject specialPrefab in specialRoomsToPlace)
         {
+            if (!useSpecialRooms) break;
             // Pick a special room to place this at
-            if (availableSpecials.Count == 0)
-            {
-                Debug.Log("No special room spots available!"); break;
-            }
-
-            // Get room prefab and random special room spot to place it at
-            GameObject specialPrefab    = specialRoomsToPlace[i];
             RoomNode specialRoom        = availableSpecials[Random.Range(0, availableSpecials.Count)];
             PlaceSpecial(specialRoom, specialPrefab);
             availableSpecials.Remove(specialRoom);
