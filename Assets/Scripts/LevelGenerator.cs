@@ -15,17 +15,15 @@ public class LevelGenerator : MonoBehaviour
     private static readonly int[] gridRight =  {1, 0};
     private static readonly int[] defaultOffset = {0, 0};
 
-    // Index of X and Y coordinates in a gridPos
-    private int IndexX              = 0;
-    private int IndexZ              = 1;
+    // Index of X and Z coordinates in a gridPos
+    private const int IndexX              = 0;
+    private const int IndexZ              = 1;
 
     // UDLR indices
-    private int IndexUp             = 0;
-    private int IndexDown           = 1;
-    private int IndexLeft           = 2;
-    private int IndexRight          = 3;
-
-    private bool visualize          = false;
+    private const int IndexUp             = 0;
+    private const int IndexDown           = 1;
+    private const int IndexLeft           = 2;
+    private const int IndexRight          = 3;
 
     /*******************************
      Internal Use
@@ -35,17 +33,18 @@ public class LevelGenerator : MonoBehaviour
     public GameObject roomNodePrefab;
 
     // Used for generation
-    private List<RoomNode> allRoomNodes;            // Contains every roomNode created
+    private RoomNode startRoom;                     // The room from which generation starts
+    private List<RoomNode> allRoomNodes;            // Contains every roomNode created in the round of generation
     private List<RoomNode> expandables;             // Contains all expandable roomNodes
     private List<RoomNode> unconnecteds;            // Contains all unconnected roomNodes
-    private RoomNode startRoom;                     // The room from which generation starts
-    private List<RoomNode> availableSpecials;       // Available spots to place a special room
+    private List<RoomNode> availableSpecials;       // Contains all special roomNodes that haven't been used for placement yet
 
     private List<GameObject> realHalls;             // Contains all the instantiated hallways
     private List<GameObject> realSpecials;          // Contains all the instantiated special rooms
 
     private Transform nodeContainer;                // Transform to parent all roomNodes
     private Transform roomContainer;                // Transform to parent all placed rooms
+    private bool visualize;                         // Whether or not to visualize 
 
     /*******************************
      System Parameters
@@ -53,17 +52,17 @@ public class LevelGenerator : MonoBehaviour
 
     // Pefabs of rooms of different connectivity
     [Header("Hallway Prefabs")]
-    public GameObject   Single;
-    public GameObject   DoubleI; // 2 connections in a straight line
-    public GameObject   DoubleL; // 2 connections at a right angle
-    public GameObject   Triple;
-    public GameObject   Quad;
+    public GameObject   Single;                     // 1 connection
+    public GameObject   DoubleI;                    // 2 connections in a straight line
+    public GameObject   DoubleL;                    // 2 connections at a right angle
+    public GameObject   Triple;                     // 3 connections
+    public GameObject   Quad;                       // 4 connections
 
     [Header("Generation Parameters")]
-    public int recentPoolSize = 5;
-    public int desiredIterations = 10;
-
-    public float roomScale  = 1;
+    public int recentPoolSize       = 5;                  // 
+    public int desiredIterations    = 10;
+    public int roomsPerIteration    = 1;
+    public float roomScale          = 1;            // The size of a room. Every room must 
 
 
     // Prefabs of the special rooms that need to be placed in the level
@@ -97,6 +96,24 @@ public class LevelGenerator : MonoBehaviour
      Initialization Helpers
     *******************************/
 
+    // Initialize the program for generation
+    public void Initialize()
+    {
+        // Reset everything
+        ClearGenerationObjects();
+        ClearInstantiatedRooms();
+
+        // The first room
+        startRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
+        startRoom.SetGridPosition(0, 0);
+        startRoom.SetHasBeenFound(true);
+        startRoom.SetColor(Color.yellow);
+
+
+        expandables.Add(startRoom);
+        allRoomNodes.Add(startRoom);
+    }
+
     // Empty lists used in generation and destroy roomNode instances
     public void ClearGenerationObjects()
     {
@@ -125,28 +142,11 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
-    // Initialize the program for generation
-    public void Initialize()
-    {
-        // Reset everything
-        ClearGenerationObjects();
-        ClearInstantiatedRooms();
-
-        // The first room
-        startRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
-        startRoom.SetGridPosition(0, 0);
-        startRoom.SetHasBeenFound(true);
-        startRoom.SetColor(Color.yellow);
-
-
-        expandables.Add(startRoom);
-        allRoomNodes.Add(startRoom);
-    }
-
     /*******************************
      Generation Helpers
     *******************************/
 
+    // Generate the rooms
     public void GenerateRooms()
     {
         int numSpecial      = specialRoomsToPlace.Count;
@@ -157,10 +157,9 @@ public class LevelGenerator : MonoBehaviour
         // Do generation
         for (int itersComplete = 1; itersComplete <= totalIters; itersComplete++)
         {
-            List<RoomNode> newRooms = GenerateHallways(1);
+            List<RoomNode> newRooms = GenerateHallways(roomsPerIteration);
             if (considerSpecialRooms && itersComplete % iterationsBetweenSpecialPlacement == 0) 
             {
-                Debug.Log("Generating special room");
                 GenerateSpecialRoom();
             }
         }
@@ -187,7 +186,7 @@ public class LevelGenerator : MonoBehaviour
     }
 
     // Get the last numRecent entries in the list
-    public List<RoomNode> GetMostRecents(int numRecent, List<RoomNode> toGetFrom)
+    private List<RoomNode> GetMostRecents(int numRecent, List<RoomNode> toGetFrom)
     {
         List<RoomNode> result = new List<RoomNode>();
 
@@ -201,7 +200,7 @@ public class LevelGenerator : MonoBehaviour
     }
 
     // Pick a room to expand from, weighted by recency
-    public RoomNode PickRoomToExpandFrom(List<RoomNode> recents)
+    private RoomNode PickRoomToExpandFrom(List<RoomNode> recents)
     {
         int sumOfWeight = 0;
         int i;
@@ -222,7 +221,7 @@ public class LevelGenerator : MonoBehaviour
         return recents[i];
     }
 
-    // Pick a direction to expand this room into
+    // Randomly select a direction roomFrom can expand into
     public int[] PickDirToExpandInto(RoomNode roomFrom)
     {
         bool special                = roomFrom.GetIsSpecial();
@@ -253,12 +252,13 @@ public class LevelGenerator : MonoBehaviour
         { 
             if (!special || curInto.GetHasBeenFound()) finalCons.Add(gridRight);
         }
-       
-        // We assume finalCons is non-empty, since roomFrom must be an expandable room
+        
+        // Return null if we can't expand at all
+        if (finalCons.Count == 0) return null;   
         return finalCons[Random.Range(0, finalCons.Count)];
     }
 
-    // Connect a room with the one in the direction specified
+    // Connect a room with the one in the direction specified (ignores connectivity restrictions)
     public bool ConnectRooms(RoomNode roomFrom, int[] direction)
     {
         bool rval = false;
@@ -316,37 +316,8 @@ public class LevelGenerator : MonoBehaviour
         return rval;
     }
 
-    // Find the room with a given grid position. If none found, initialize a room at that position if appropriate
-    public RoomNode GetRoomAtGridPos(int[] gridPos, int[] offset = null, bool preventNew = false)
-    {
-        // Add offset and check for existence
-        offset ??= defaultOffset;
-        int[] resultPos = {gridPos[IndexX] + offset[IndexX], gridPos[IndexZ] + offset[IndexZ]};
-
-        foreach (RoomNode room in allRoomNodes)
-        {
-            int[] curPos = room.GetGridPosition();
-            if (curPos[0] == resultPos[0] && curPos[1] == resultPos[1]) return room;
-        }
-
-        // None found, so initialize a room at that position if desired
-        if (preventNew) return null;
-
-        RoomNode newRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
-        newRoom.SetGridPosition(resultPos[IndexX], resultPos[IndexZ]);
-        newRoom.transform.localPosition = GetCoords(newRoom, roomScale);
-        allRoomNodes.Add(newRoom);
-        unconnecteds.Add(newRoom);
-
-        return newRoom;
-    }
-
-    /*******************************
-     Special Room Helpers
-    *******************************/
-
-    // Find
-    public void GenerateSpecialRoom()
+    // Make a roomNode special and add to availableSpecials
+    private void GenerateSpecialRoom()
     {
         // Get most recent unconnecteds
         List<RoomNode> mostRecents = GetMostRecents(recentPoolSize, unconnecteds);
@@ -370,18 +341,6 @@ public class LevelGenerator : MonoBehaviour
             // Only check existing, connected nodes
             if (curRoom && curRoom.GetHasBeenFound() && !CheckCanExpand(curRoom)) expandables.Remove(curRoom);
         }
-    }
-
-    // Return the squared distance between two rooms by grid position
-    public float GetRoomDistanceSqrd(RoomNode r1, RoomNode r2)
-    {
-        int[] pos1 = r1.GetGridPosition();
-        int[] pos2 = r2.GetGridPosition();
-
-        float distX = pos1[IndexX] - pos2[IndexX];
-        float distY = pos1[IndexZ] - pos2[IndexZ];
-
-        return distX * distX + distY * distY;
     }
 
     /*******************************
@@ -423,7 +382,8 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
-    public void PlaceSpecial(RoomNode specialRoom, GameObject specialPrefab)
+    // Place an individual special room
+    private void PlaceSpecial(RoomNode specialRoom, GameObject specialPrefab)
     {
         float rotation  = 0f;
         bool[] cons     = specialRoom.GetConnections();
@@ -433,13 +393,13 @@ public class LevelGenerator : MonoBehaviour
         else if (cons[IndexLeft])   rotation = 180f;
 
         GameObject realSpecial = Instantiate(specialPrefab, roomContainer);
-        realSpecial.transform.localPosition = GetCoords(specialRoom, roomScale);
+        realSpecial.transform.localPosition = GetPlacementPosition(specialRoom, roomScale);
         realSpecial.transform.localRotation = Quaternion.Euler(new Vector3(0f, rotation, 0f));
         realSpecials.Add(realSpecial);
     }
 
     // Determine the given hallway's type, rotation and place appropriately
-    public void PlaceHallway(RoomNode room)
+    private void PlaceHallway(RoomNode room)
     {
         GameObject type;
         float rotation  = 0f;
@@ -489,20 +449,66 @@ public class LevelGenerator : MonoBehaviour
             else                        { type = DoubleL; rotation = -90f;  }
         }
 
-        // Instantiate the real room
+        // Instantiate the real room and place
         GameObject realRoom = Instantiate(type, roomContainer, false);
-        realRoom.transform.localPosition = GetCoords(room, roomScale);
+        realRoom.transform.localPosition = GetPlacementPosition(room, roomScale);
         realRoom.transform.localRotation = Quaternion.Euler(new Vector3(0f, rotation, 0f));
         realHalls.Add(realRoom);
     }
 
-    // Get realword positioning of a room
-    public Vector3 GetCoords(RoomNode room, float scale)
+    /*******************************
+     Additional Helpers
+    *******************************/
+
+    // Find the room with a given grid position. If none found, initialize a room at that position if appropriate
+    public RoomNode GetRoomAtGridPos(int[] gridPos, int[] offset = null, bool preventNew = false)
+    {
+        // Add offset and check for existence
+        offset ??= defaultOffset;
+        int[] resultPos = {gridPos[IndexX] + offset[IndexX], gridPos[IndexZ] + offset[IndexZ]};
+
+        foreach (RoomNode room in allRoomNodes)
+        {
+            int[] curPos = room.GetGridPosition();
+            if (curPos[0] == resultPos[0] && curPos[1] == resultPos[1]) return room;
+        }
+
+        // None found, so initialize a room at that position if desired
+        if (preventNew) return null;
+
+        RoomNode newRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
+        newRoom.SetGridPosition(resultPos[IndexX], resultPos[IndexZ]);
+        newRoom.transform.localPosition = GetPlacementPosition(newRoom, roomScale);
+        allRoomNodes.Add(newRoom);
+        unconnecteds.Add(newRoom);
+
+        return newRoom;
+    }
+
+    // Get positioning of a room based on its grid position 
+    public Vector3 GetPlacementPosition(RoomNode room, float scale)
     {
         int[] gridPos = room.GetGridPosition();
         return new Vector3(gridPos[IndexX] * scale, 0f, gridPos[IndexZ] * scale);
     }
 
+    // Return the squared distance between two rooms by grid position
+    public float GetRoomDistanceSqrd(RoomNode r1, RoomNode r2)
+    {
+        int[] pos1 = r1.GetGridPosition();
+        int[] pos2 = r2.GetGridPosition();
+
+        float distX = pos1[IndexX] - pos2[IndexX];
+        float distY = pos1[IndexZ] - pos2[IndexZ];
+
+        return distX * distX + distY * distY;
+    }
+
+    /*******************************
+     Visualization
+    *******************************/
+
+    // Update the visuals of every roomNode, setting active to val
     public void UpdateAllVisuals(bool val)
     {
         foreach (RoomNode room in allRoomNodes)
@@ -511,6 +517,7 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
+    // Turn the visuals of each roomNode on/off
     public void ToggleVisuals()
     {
         visualize = !visualize;

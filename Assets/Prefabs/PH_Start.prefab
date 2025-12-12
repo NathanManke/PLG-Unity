@@ -126,7 +126,7 @@ GameObject:
   m_Component:
   - component: {fileID: 432658192677599601}
   m_Layer: 0
-  m_Name: Start Placeholder
+  m_Name: PH_Start
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

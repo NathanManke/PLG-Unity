@@ -148,6 +148,8 @@ public class RoomNode : MonoBehaviour
     /*******************************
      Visualization
     *******************************/
+
+    // Set connectivity indicators active/inactive depending on connectivity
     public void UpdateVisuals(bool val)
     {
         upInd.SetActive(connectUp && val);
@@ -157,6 +159,7 @@ public class RoomNode : MonoBehaviour
         orb.SetActive(val);
     }
 
+    // Sets the colour of the sphere
     public void SetColor(Color c)
     {
         orb.GetComponent<Renderer>().material.color = c;
