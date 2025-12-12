@@ -59,15 +59,15 @@ public class LevelGenerator : MonoBehaviour
     public GameObject   Quad;                       // 4 connections
 
     [Header("Generation Parameters")]
-    public int recentPoolSize       = 5;                  // 
-    public int desiredIterations    = 10;
-    public int roomsPerIteration    = 1;
+    public int recentPoolSize       = 5;            // The number of most recently placed expandable nodes that will be drawn from for expansion 
+    public int desiredIterations    = 10;           // How many generation iterations the algorithm should do*
+    public int hallsPerIteration    = 1;            // How many hallways should be made in each iteration
     public float roomScale          = 1;            // The size of a room. Every room must 
 
 
     // Prefabs of the special rooms that need to be placed in the level
     [Header("Special Rooms")]
-    public bool considerSpecialRooms;
+    public bool useSpecialRooms;
     public List<GameObject> specialRoomsToPlace;
     public int iterationsBetweenSpecialPlacement = 10;
 
@@ -157,8 +157,8 @@ public class LevelGenerator : MonoBehaviour
         // Do generation
         for (int itersComplete = 1; itersComplete <= totalIters; itersComplete++)
         {
-            List<RoomNode> newRooms = GenerateHallways(roomsPerIteration);
-            if (considerSpecialRooms && itersComplete % iterationsBetweenSpecialPlacement == 0) 
+            List<RoomNode> newRooms = GenerateHallways(hallsPerIteration);
+            if (useSpecialRooms && itersComplete % iterationsBetweenSpecialPlacement == 0) 
             {
                 GenerateSpecialRoom();
             }

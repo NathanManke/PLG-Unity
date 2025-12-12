@@ -210,7 +210,7 @@ Transform:
   m_GameObject: {fileID: 60579363}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 12.12, y: -17.35, z: -21}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -445,6 +445,14 @@ PrefabInstance:
     - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
       propertyPath: maxExpandables
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: desiredIterations
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
+      propertyPath: roomsPerIteration
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8126335771049329721, guid: 44a586e71f9097f439ead40ce63f8841, type: 3}
       propertyPath: considerSpecialRooms
