@@ -124,6 +124,7 @@ public class LevelGenerator : MonoBehaviour
         originRoom.SetGridPosition(0, 0);
         originRoom.SetHasBeenFound(true);
         originRoom.SetColor(Color.yellow);
+        originRoom.transform.localScale *= roomScale;
 
         expandables.Add(originRoom);
         allRoomNodes.Add(originRoom);
@@ -493,6 +494,7 @@ public class LevelGenerator : MonoBehaviour
         RoomNode newRoom = Instantiate(roomNodePrefab, nodeContainer).GetComponent<RoomNode>();
         newRoom.SetGridPosition(resultPos[IndexX], resultPos[IndexZ]);
         newRoom.transform.localPosition = GetPlacementPosition(newRoom, roomScale);
+        newRoom.transform.localScale        *= roomScale;
         allRoomNodes.Add(newRoom);
         unconnecteds.Add(newRoom);
 

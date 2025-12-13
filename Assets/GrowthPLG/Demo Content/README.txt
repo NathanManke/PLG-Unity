@@ -17,6 +17,9 @@ ItersPerSpecial showcases the effect of increasing the number of iterations befo
 
 RecentPoolSize showcases the effect of changing the number of most recently placed rooms the algorithm will use in its growth selection process.
 
+ImportedAsset is an example using rooms that are more alike to what a game would use. Assets are taken from here: 
+https://assetstore.unity.com/packages/3d/environments/3d-free-modular-kit-85732
+
 --
 
 The colour scheme for RoomNodes is as follows:
