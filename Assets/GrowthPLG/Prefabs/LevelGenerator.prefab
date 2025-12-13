@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7358661648377039693}
   - component: {fileID: 8126335771049329721}
   m_Layer: 0
-  m_Name: RoomGenerator
+  m_Name: LevelGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -52,12 +52,15 @@ MonoBehaviour:
   DoubleL: {fileID: 0}
   Triple: {fileID: 0}
   Quad: {fileID: 0}
+  specialPrefabs: []
+  roomScale: 1
+  useSpecialRooms: 0
   recentPoolSize: 5
   desiredIterations: 10
-  roomScale: 3
-  considerSpecialRooms: 0
-  specialRoomsToPlace: []
-  iterationsBetweenSpecialPlacement: 10
+  hallsPerIteration: 1
+  iterationsForSpecial: 10
+  randomSeed: 0
+  useSeed: 0
 --- !u!1 &6923087785581671360
 GameObject:
   m_ObjectHideFlags: 0

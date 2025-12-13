@@ -33,7 +33,7 @@ public class LevelGenerator : MonoBehaviour
     public GameObject roomNodePrefab;
 
     // Used for generation
-    private RoomNode originRoom;                     // The room from which generation starts
+    private RoomNode originRoom;                    // The room from which generation starts
     private List<RoomNode> allRoomNodes;            // Contains every roomNode created in the round of generation
     private List<RoomNode> expandables;             // Contains all expandable roomNodes
     private List<RoomNode> unconnecteds;            // Contains all unconnected roomNodes
@@ -66,26 +66,27 @@ public class LevelGenerator : MonoBehaviour
     *******************************/
 
     // Pefabs of rooms of different connectivity
-    [Header("Hallway Prefabs")]
+    [Header("Room Prefabs")]
     public GameObject   Single;                     // 1 connection
     public GameObject   DoubleI;                    // 2 connections in a straight line
     public GameObject   DoubleL;                    // 2 connections at a right angle
     public GameObject   Triple;                     // 3 connections
     public GameObject   Quad;                       // 4 connections
+    
+    // Prefabs of the special rooms that need to be placed in the level
+    public List<GameObject> specialPrefabs;
+
+    [Header("Room Settings")]
+    public float roomScale          = 1;            // The size of a room. Every room must be the same size. This should match the X and Z reach of the room prefabs.
+    public bool useSpecialRooms;
 
     [Header("Generation Parameters")]
     public int recentPoolSize       = 5;            // The number of most recently placed expandable nodes that will be drawn from for expansion 
     public int desiredIterations    = 10;           // How many generation iterations the algorithm should do*
     public int hallsPerIteration    = 1;            // How many hallways should be made in each iteration
-    public float roomScale          = 1;            // The size of a room. Every room must 
-
-
-    // Prefabs of the special rooms that need to be placed in the level
-    [Header("Special Rooms")]
-    public bool useSpecialRooms;
-    public List<GameObject> specialRoomsToPlace;
-    public int iterationsBetweenSpecialPlacement = 10;
-
+    public int iterationsPerSpecial = 10;
+    public int randomSeed           = 0;            // The seed 
+    public bool useSeed             = false;        // Whether to use the random seed or not
     
     // Initialize the all-containing lists
     void Awake()
@@ -101,10 +102,10 @@ public class LevelGenerator : MonoBehaviour
     // The easily callable method that generates the level
     public void DoGeneration()
     {
-        Initialize();
-        GenerateRooms();
-        PickAndPlace();
-        UpdateAllVisuals(visualize);
+        Initialize();                   // Initialize data structures, random state
+        GenerateRooms();                // Generate the layout of the level
+        PickAndPlace();                 // Place the real rooms of the level
+        UpdateAllVisuals(visualize);    // Enable/Disable visualization of RoomNodes
     }
 
     /*******************************
@@ -124,9 +125,11 @@ public class LevelGenerator : MonoBehaviour
         originRoom.SetHasBeenFound(true);
         originRoom.SetColor(Color.yellow);
 
-
         expandables.Add(originRoom);
         allRoomNodes.Add(originRoom);
+
+        randomSeed = useSeed ? randomSeed : (int)System.DateTime.Now.Ticks;
+        Random.InitState(randomSeed);
     }
 
     // Empty lists used in generation and destroy roomNode instances
@@ -164,17 +167,18 @@ public class LevelGenerator : MonoBehaviour
     // Generate the rooms
     public void GenerateRooms()
     {
-        int numSpecial      = specialRoomsToPlace.Count;
+        int numSpecial      = specialPrefabs.Count;
 
         // Determine the total number of iterations that must be done
-        int totalIters      = Mathf.Max(desiredIterations, numSpecial * iterationsBetweenSpecialPlacement);
+        int totalIters      = useSpecialRooms? Mathf.Max(desiredIterations, numSpecial * iterationsPerSpecial) : desiredIterations;
 
         // Do generation
         for (int itersComplete = 1; itersComplete <= totalIters; itersComplete++)
         {
             List<RoomNode> newRooms = GenerateHallways(hallsPerIteration);
-            if (useSpecialRooms && itersComplete % iterationsBetweenSpecialPlacement == 0) 
+            if (useSpecialRooms && itersComplete % iterationsPerSpecial == 0) 
             {
+                // Place a special room
                 GenerateSpecialRoom();
             }
         }
@@ -187,6 +191,7 @@ public class LevelGenerator : MonoBehaviour
         for (int i = 0; i < numIterations; i++)
         {
             List<RoomNode> mostRecents = GetMostRecents(recentPoolSize, expandables);
+
             // Pick a room to expand from
             RoomNode roomFrom = PickRoomToExpandFrom(mostRecents);
 
@@ -366,7 +371,7 @@ public class LevelGenerator : MonoBehaviour
     public void PickAndPlace()
     {
         // Do special rooms first
-        foreach (GameObject specialPrefab in specialRoomsToPlace)
+        foreach (GameObject specialPrefab in specialPrefabs)
         {
             if (!useSpecialRooms) break;
             // Pick a special room to place this at
